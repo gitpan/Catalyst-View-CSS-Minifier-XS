@@ -7,33 +7,17 @@ use base qw/Catalyst::View/;
 
 our $VERSION = '0.01';
 
+use NEXT;
 use Carp qw/croak/;
-use CSS::Squish;
 use CSS::Minifier::XS qw/minify/;
-use Data::Dump qw/dump/;
 use Path::Class::File;
-
-sub process {
-    my ($self,$c) = @_;
-    croak 'No CSS files specified in $c->stash->{template}'
-        unless defined $c->stash->{template};
-    my (@files) = ( ref $c->stash->{template} eq 'ARRAY' ?
-        @{ $c->stash->{template} } : 
-	split /\s+/, $c->stash->{template} );
-    # map files to INCLUDE_PATH
-    my $home=$self->config->{INCLUDE_PATH} || $c->path_to('root');
-    @files = map { 
-       Path::Class::File->new( $home, $_);
-    } @files;
-    # feed them to CSS::Squish and set the body.
-	my $css = CSS::Squish->concatenate(@files);	
-    $c->res->content_type("text/css");
-    $c->res->body( minify($css) );
-}
+use Carp;
+use Catalyst::Exception;
+use URI;
 
 =head1 NAME
 
-Catalyst::View::CSS::Minifier::XS - Concenate and minify your CSS files.
+Catalyst::View::CSS::Minifier::XS - Minify your multiple CSS files and use them with Catalyst.
 
 =head1 VERSION
 
@@ -41,32 +25,148 @@ Version 0.01
 
 =head1 SYNOPSIS
 
+	# creating MyApp::View::CSS
     ./script/myapp_create.pl view CSS CSS::Minifier::XS
 
+	# in your controller file, as an action
     sub css : Local {
-		my ($self,$c) = @_;
-		$c->stash->{template} = [ qw|/css/small.css /css/big.css| ];		
-        $c->forward($c->view('CSS'));
+		my ( $self, $c ) = @_;	
+		
+		$c->stash->{css} = [qw/style1 style2/]; # loads root/css/style1.css and root/css/style2.css
+	
+		$c->forward("View::CSS");
     }
+	
+	# in your html template use
+	<link rel="stylesheet" type="text/css" media="screen" href="/css" />
 
 =head1 DESCRIPTION
 
-Take a set of CSS files and integrate them into one big file using 
-L<CSS::Squish> and minifies them using L<CSS::Minifier::XS>.  
-The files are read from the 'template' stash variable,
-and can be provided as a hashref or a space separated scalar.
+Use your minified css files as a separated catalyst request. By default they are read from C<< $c->stash->{css} >> as array or string.
+
+=head1 CONFIG VARIABLES
+
+=over 2
+
+=item stash_variable
+
+sets a different stash variable from the default C<< $c->stash->{css} >>
+
+=item path
+
+sets a different path for your css files
+
+default : css
+
+=item subinclude
+
+setting this to true will take your css files (stash variable) from your referer action
+
+	# in your controller 
+	sub action : Local {
+		my ( $self, $c ) = @_;
+		
+		$c->stash->{css} = "exclusive"; # loads exclusive.css only when /action is loaded
+	}
+
+This could be very dangerous since it's using C<< $c->forward($c->request->headers->referer) >>. It doesn't work with the index action!
+
+default : false
+
+=back
+
+=cut
+
+__PACKAGE__->mk_accessors(qw(stash_variable path subinclude));
+
+sub new {
+	my($class, $c, $arguments) = @_;
+    my $self = $class->NEXT::new($c);
+	my %config = ( stash_variable => 'css', path => 'css', subinclude => 0, %$arguments );
+	for my $field ( keys %config ) {
+		if ( $self->can($field) ) {
+			$self->$field( $config{$field} );
+		} else {
+			$c->log->debug("Unknown config parameter '$field'");
+		}
+	}
+	return $self;
+}
+
+sub process {
+    my ($self,$c) = @_;
+			
+	my $path = $self->path;	
+	my $variable = $self->stash_variable;	
+	my @files = ();	
+
+	my $original_stash = $c->stash->{$variable};
+	
+	# turning stash variable into @files
+	if ( $c->stash->{$variable} ) {
+		@files = ( ref $c->stash->{$variable} eq 'ARRAY' ? @{ $c->stash->{$variable} } : split /\s+/, $c->stash->{$variable} );	
+	}
+	
+	if ( $self->subinclude ) {
+		my $base = $c->request->base;
+		if ( $c->request->headers->referer ) {			
+			my $referer = URI->new($c->request->headers->referer);			
+			if ( $referer->path ne "/" ) {
+				$c->forward("/".$referer->path);
+				$c->log->debug("css taken from referer : ".$referer->path);
+				if ( $c->stash->{$variable} ne $original_stash ) {
+					# adding other files returned from $c->forward to @files ( if any )
+					push @files, ( ref $c->stash->{$variable} eq 'ARRAY' ? @{ $c->stash->{$variable} } : split /\s+/, $c->stash->{$variable} );	
+				}
+			} else {
+				# well for now we can't get css files from index, because it's indefinite loop
+				$c->log->debug("we can't take css from index, it's too dangerous!");
+			}			
+		} else {
+			# when subinclude => 1 and no referer we won't show anything
+			$c->log->debug("css called from no referer sending blank");
+			$c->res->content_type("text/css");
+			$c->res->body( " " );			
+			$c->detach();
+		}
+	}
+	
+	my $home = $self->config->{INCLUDE_PATH} || $c->path_to('root');
+	
+	@files = map {
+		my $file = $_;
+		$file =~ s/\.css$//;
+		Path::Class::File->new( $home, "$path", "$file.css" );		
+	} @files;
+	
+	# combining the files
+	my @output;
+	for my $file ( @files ) {
+		$c->log->debug("loading css file ... $file");
+		open(IN, "<$file");
+		for ( <IN> ) {
+			push @output, $_;
+		}
+		close(IN);
+	}
+
+	$c->res->content_type("text/css");
+	if ( @output ) {
+		# minifying them if any files loaded at all
+		$c->res->body( minify(join(" ", @output)) );	
+	} else {
+		$c->res->body( "" );	
+	}
+}
+
 
 =head1 SEE ALSO
 
-L<Catalyst> , L<Catalyst::View>, L<CSS::Squish>, L<CSS::Minifier::XS>
+L<Catalyst> , L<Catalyst::View>, L<CSS::Minifier::XS>
 
 =head1 AUTHOR
 
 Ivan Drinchev C<< <drinchev at gmail.com> >>
-
-=head1 THANKS
-
-To Marcus Ramberg C<mramberg@cpan.org> and his L<Catalyst::View::CSS::Squish> on which I've build this one
 
 =head1 BUGS
 
@@ -76,7 +176,7 @@ automatically be notified of progress on your bug as I make changes.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008 Ivan Drinchev, all rights reserved.
+Copyright 2009 Ivan Drinchev, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
