@@ -57,11 +57,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = Catalyst::View::CSS::Minifier::XS
 NAME_SYM = Catalyst_View_CSS_Minifier_XS
-VERSION = 0.01
+VERSION = 0.02
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_01
+VERSION_SYM = 0_02
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.01
+XS_VERSION = 0.02
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -160,7 +160,8 @@ C_FILES  =
 O_FILES  = 
 H_FILES  = 
 MAN1PODS = 
-MAN3PODS = lib/Catalyst/View/CSS/Minifier/XS.pm
+MAN3PODS = lib/Catalyst/Helper/View/CSS/Minifier/XS.pm \
+	lib/Catalyst/View/CSS/Minifier/XS.pm
 
 # Where is the Config information that we are using/depend on
 CONFIGDEP = $(PERL_ARCHLIB)$(DFSEP)Config.pm $(PERL_INC)$(DFSEP)config.h
@@ -182,10 +183,13 @@ PERL_ARCHIVE       =
 PERL_ARCHIVE_AFTER = 
 
 
-TO_INST_PM = lib/Catalyst/View/CSS/Minifier/XS.pm
+TO_INST_PM = lib/Catalyst/Helper/View/CSS/Minifier/XS.pm \
+	lib/Catalyst/View/CSS/Minifier/XS.pm
 
 PM_TO_BLIB = lib/Catalyst/View/CSS/Minifier/XS.pm \
-	blib/lib/Catalyst/View/CSS/Minifier/XS.pm
+	blib/lib/Catalyst/View/CSS/Minifier/XS.pm \
+	lib/Catalyst/Helper/View/CSS/Minifier/XS.pm \
+	blib/lib/Catalyst/Helper/View/CSS/Minifier/XS.pm
 
 
 # --- MakeMaker platform_constants section:
@@ -252,7 +256,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = Catalyst-View-CSS-Minifier-XS
-DISTVNAME = Catalyst-View-CSS-Minifier-XS-0.01
+DISTVNAME = Catalyst-View-CSS-Minifier-XS-0.02
 
 
 # --- MakeMaker macro section:
@@ -405,9 +409,11 @@ POD2MAN = $(POD2MAN_EXE)
 
 
 manifypods : pure_all  \
-	lib/Catalyst/View/CSS/Minifier/XS.pm
+	lib/Catalyst/View/CSS/Minifier/XS.pm \
+	lib/Catalyst/Helper/View/CSS/Minifier/XS.pm
 	$(NOECHO) $(POD2MAN) --section=3 --perm_rw=$(PERM_RW) \
-	  lib/Catalyst/View/CSS/Minifier/XS.pm $(INST_MAN3DIR)/Catalyst::View::CSS::Minifier::XS.$(MAN3EXT) 
+	  lib/Catalyst/View/CSS/Minifier/XS.pm $(INST_MAN3DIR)/Catalyst::View::CSS::Minifier::XS.$(MAN3EXT) \
+	  lib/Catalyst/Helper/View/CSS/Minifier/XS.pm $(INST_MAN3DIR)/Catalyst::Helper::View::CSS::Minifier::XS.$(MAN3EXT) 
 
 
 
@@ -473,7 +479,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) Generating META.yml
 	$(NOECHO) $(ECHO) '--- #YAML:1.0' > META_new.yml
 	$(NOECHO) $(ECHO) 'name:                Catalyst-View-CSS-Minifier-XS' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version:             0.01' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version:             0.02' >> META_new.yml
 	$(NOECHO) $(ECHO) 'abstract:            Minify your multiple CSS files and use them with Catalyst.' >> META_new.yml
 	$(NOECHO) $(ECHO) 'license:             perl' >> META_new.yml
 	$(NOECHO) $(ECHO) 'author:              ' >> META_new.yml
@@ -778,7 +784,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,01,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,02,0,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>Minify your multiple CSS files and use them with Catalyst.</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Ivan Drinchev &lt;drinchev@gmail.com&gt;</AUTHOR>' >> $(DISTNAME).ppd
@@ -798,7 +804,8 @@ ppd :
 
 pm_to_blib : $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', '\''$(PM_FILTER)'\'')' -- \
-	  lib/Catalyst/View/CSS/Minifier/XS.pm blib/lib/Catalyst/View/CSS/Minifier/XS.pm 
+	  lib/Catalyst/View/CSS/Minifier/XS.pm blib/lib/Catalyst/View/CSS/Minifier/XS.pm \
+	  lib/Catalyst/Helper/View/CSS/Minifier/XS.pm blib/lib/Catalyst/Helper/View/CSS/Minifier/XS.pm 
 	$(NOECHO) $(TOUCH) pm_to_blib
 
 

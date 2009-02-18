@@ -5,7 +5,7 @@ use strict;
 
 use base qw/Catalyst::View/;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use NEXT;
 use Carp qw/croak/;
@@ -21,7 +21,7 @@ Catalyst::View::CSS::Minifier::XS - Minify your multiple CSS files and use them 
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =head1 SYNOPSIS
 
@@ -107,6 +107,15 @@ sub process {
 		@files = ( ref $c->stash->{$variable} eq 'ARRAY' ? @{ $c->stash->{$variable} } : split /\s+/, $c->stash->{$variable} );	
 	}
 	
+	# No referer we won't show anything
+	if ( ! $c->request->headers->referer ) {		
+		$c->log->debug("css called from no referer sending blank");
+		$c->res->content_type("text/css");
+		$c->res->body( " " );			
+		$c->detach();
+	}
+	
+	# If we have subinclude ON then we should run the action and see what it left behind
 	if ( $self->subinclude ) {
 		my $base = $c->request->base;
 		if ( $c->request->headers->referer ) {			
@@ -122,12 +131,6 @@ sub process {
 				# well for now we can't get css files from index, because it's indefinite loop
 				$c->log->debug("we can't take css from index, it's too dangerous!");
 			}			
-		} else {
-			# when subinclude => 1 and no referer we won't show anything
-			$c->log->debug("css called from no referer sending blank");
-			$c->res->content_type("text/css");
-			$c->res->body( " " );			
-			$c->detach();
 		}
 	}
 	
