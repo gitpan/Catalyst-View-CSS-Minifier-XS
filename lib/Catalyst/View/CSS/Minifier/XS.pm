@@ -11,7 +11,6 @@ use NEXT;
 use Carp qw/croak/;
 use CSS::Minifier::XS qw/minify/;
 use Path::Class::File;
-use Carp;
 use Catalyst::Exception;
 use URI;
 
@@ -158,7 +157,7 @@ sub process {
 		# minifying them if any files loaded at all
 		$c->res->body( minify(join(" ", @output)) );	
 	} else {
-		$c->res->body( "" );	
+		$c->res->body( " " );	
 	}
 }
 
