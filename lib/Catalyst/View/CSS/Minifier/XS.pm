@@ -1,47 +1,157 @@
 package Catalyst::View::CSS::Minifier::XS;
+our $VERSION = '1.093030';
 
-use warnings;
-use strict;
 
-use base qw/Catalyst::View/;
 
-our $VERSION = '0.02';
+# ABSTRACT: Minify your served CSS files
 
-use NEXT;
-use Carp qw/croak/;
+use Moose;
+extends 'Catalyst::View';
+
 use CSS::Minifier::XS qw/minify/;
 use Path::Class::File;
-use Catalyst::Exception;
 use URI;
+
+has stash_variable => (
+   is => 'ro',
+   isa => 'Str',
+   default => 'css',
+);
+
+has path => (
+   is => 'ro',
+   isa => 'Str',
+   default => 'css',
+);
+
+has subinclude => (
+   is => 'ro',
+   isa => 'Bool',
+   default => undef,
+);
+
+sub process {
+   my ($self,$c) = @_;
+
+   my $original_stash = $c->stash->{$self->stash_variable};
+   my @files = $self->_expand_stash($original_stash);
+
+   $c->res->content_type('text/css');
+
+   push @files, $self->_subinclude($c, $original_stash, @files);
+
+   my $home = $self->config->{INCLUDE_PATH} || $c->path_to('root');
+   @files = map {
+      $_ =~ s/\.css//;
+      Path::Class::File->new( $home, $self->path, "$_.css" );
+   } grep { defined $_ && $_ ne '' } @files;
+
+   my @output = $self->_combine_files($c, \@files);
+
+   $c->res->body( $self->_minify($c, \@output) );
+}
+
+sub _subinclude {
+   my ( $self, $c, $original_stash, @files ) = @_;
+
+   return unless $self->subinclude && $c->request->headers->referer;
+
+   unless ( $c->request->headers->referer ) {
+      $c->log->debug('javascripts called from no referer sending blank');
+      $c->res->body( q{ } );
+      $c->detach();
+   }
+
+   my $referer = URI->new($c->request->headers->referer);
+
+   if ( $referer->path eq '/' ) {
+      $c->log->debug(q{we can't take css from index as it's too likely to enter an infinite loop!});
+      return;
+   }
+
+   $c->forward('/'.$referer->path);
+   $c->log->debug('css taken from referer : '.$referer->path);
+
+   return $self->_expand_stash($c->stash->{$self->stash_variable})
+      if $c->stash->{$self->stash_variable} ne $original_stash;
+}
+
+sub _minify {
+   my ( $self, $c, $output ) = @_;
+
+   if ( @{$output} ) {
+      return $c->debug
+         ? join q{ }, @{$output}
+         : minify(join q{ }, @{$output} )
+   } else {
+      return q{ };
+   }
+}
+
+sub _combine_files {
+   my ( $self, $c, $files ) = @_;
+
+   my @output;
+   for my $file (@{$files}) {
+      $c->log->debug("loading css file ... $file");
+      open my $in, '<', $file;
+      for (<$in>) {
+         push @output, $_;
+      }
+      close $in;
+   }
+   return @output;
+}
+
+sub _expand_stash {
+   my ( $self, $stash_var ) = @_;
+
+   if ( $stash_var ) {
+      return ref $stash_var eq 'ARRAY'
+         ? @{ $stash_var }
+	 : split /\s+/, $stash_var;
+   }
+
+}
+
+
+
+
+1;
+
+__END__
+=pod
 
 =head1 NAME
 
-Catalyst::View::CSS::Minifier::XS - Minify your multiple CSS files and use them with Catalyst.
+Catalyst::View::CSS::Minifier::XS - Minify your served CSS files
 
 =head1 VERSION
 
-Version 0.02
+version 1.093030
 
 =head1 SYNOPSIS
 
-	# creating MyApp::View::CSS
-    ./script/myapp_create.pl view CSS CSS::Minifier::XS
+ # creating MyApp::View::CSS
+ ./script/myapp_create.pl view CSS CSS::Minifier::XS
 
-	# in your controller file, as an action
-    sub css : Local {
-		my ( $self, $c ) = @_;	
-		
-		$c->stash->{css} = [qw/style1 style2/]; # loads root/css/style1.css and root/css/style2.css
-	
-		$c->forward("View::CSS");
-    }
-	
-	# in your html template use
-	<link rel="stylesheet" type="text/css" media="screen" href="/css" />
+ # in your controller file, as an action
+ sub css : Local {
+    my ( $self, $c ) = @_;
+
+    # load root/css/style1.css and root/css/style2.css
+    $c->stash->{css} = [qw/style1 style2/];
+
+    $c->forward("View::CSS");
+ }
+
+ # in your html template use
+ <link rel="stylesheet" type="text/css" media="screen" href="/css" />
 
 =head1 DESCRIPTION
 
-Use your minified css files as a separated catalyst request. By default they are read from C<< $c->stash->{css} >> as array or string.
+Use your minified css files as a separated catalyst request. By default they
+are read from C<< $c->stash->{css} >> as array or string.
 
 =head1 CONFIG VARIABLES
 
@@ -59,108 +169,24 @@ default : css
 
 =item subinclude
 
-setting this to true will take your css files (stash variable) from your referer action
+setting this to true will take your css files (stash variable) from your referer
+action
 
-	# in your controller 
-	sub action : Local {
-		my ( $self, $c ) = @_;
-		
-		$c->stash->{css} = "exclusive"; # loads exclusive.css only when /action is loaded
-	}
+ # in your controller
+ sub action : Local {
+    my ( $self, $c ) = @_;
 
-This could be very dangerous since it's using C<< $c->forward($c->request->headers->referer) >>. It doesn't work with the index action!
+    # load exclusive.css only when /action is loaded
+    $c->stash->{css} = "exclusive";
+ }
+
+This could be very dangerous since it's using
+C<< $c->forward($c->request->headers->referer) >>. It doesn't work with the
+index action!
 
 default : false
 
 =back
-
-=cut
-
-__PACKAGE__->mk_accessors(qw(stash_variable path subinclude));
-
-sub new {
-	my($class, $c, $arguments) = @_;
-    my $self = $class->NEXT::new($c);
-	my %config = ( stash_variable => 'css', path => 'css', subinclude => 0, %$arguments );
-	for my $field ( keys %config ) {
-		if ( $self->can($field) ) {
-			$self->$field( $config{$field} );
-		} else {
-			$c->log->debug("Unknown config parameter '$field'");
-		}
-	}
-	return $self;
-}
-
-sub process {
-    my ($self,$c) = @_;
-			
-	my $path = $self->path;	
-	my $variable = $self->stash_variable;	
-	my @files = ();	
-
-	my $original_stash = $c->stash->{$variable};
-	
-	# turning stash variable into @files
-	if ( $c->stash->{$variable} ) {
-		@files = ( ref $c->stash->{$variable} eq 'ARRAY' ? @{ $c->stash->{$variable} } : split /\s+/, $c->stash->{$variable} );	
-	}
-	
-	# No referer we won't show anything
-	if ( ! $c->request->headers->referer ) {		
-		$c->log->debug("css called from no referer sending blank");
-		$c->res->content_type("text/css");
-		$c->res->body( " " );			
-		$c->detach();
-	}
-	
-	# If we have subinclude ON then we should run the action and see what it left behind
-	if ( $self->subinclude ) {
-		my $base = $c->request->base;
-		if ( $c->request->headers->referer ) {			
-			my $referer = URI->new($c->request->headers->referer);			
-			if ( $referer->path ne "/" ) {
-				$c->forward("/".$referer->path);
-				$c->log->debug("css taken from referer : ".$referer->path);
-				if ( $c->stash->{$variable} ne $original_stash ) {
-					# adding other files returned from $c->forward to @files ( if any )
-					push @files, ( ref $c->stash->{$variable} eq 'ARRAY' ? @{ $c->stash->{$variable} } : split /\s+/, $c->stash->{$variable} );	
-				}
-			} else {
-				# well for now we can't get css files from index, because it's indefinite loop
-				$c->log->debug("we can't take css from index, it's too dangerous!");
-			}			
-		}
-	}
-	
-	my $home = $self->config->{INCLUDE_PATH} || $c->path_to('root');
-	
-	@files = map {
-		my $file = $_;
-		$file =~ s/\.css$//;
-		Path::Class::File->new( $home, "$path", "$file.css" );		
-	} @files;
-	
-	# combining the files
-	my @output;
-	for my $file ( @files ) {
-		$c->log->debug("loading css file ... $file");
-		open(IN, "<$file");
-		for ( <IN> ) {
-			push @output, $_;
-		}
-		close(IN);
-	}
-
-	$c->res->content_type("text/css");
-	if ( @output ) {
-		# minifying them if any files loaded at all
-		$c->res->body( minify(join(" ", @output)) );	
-	} else {
-		$c->res->body( " " );	
-	}
-}
-
 
 =head1 SEE ALSO
 
@@ -183,6 +209,17 @@ Copyright 2009 Ivan Drinchev, all rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
+=head1 AUTHORS
+
+  Ivan Drinchev <drinchev (at) gmail (dot) com>
+  Arthur Axel "fREW" Schmidt <frioux@gmail.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2009 by Ivan Drinchev <drinchev (at) gmail (dot) com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
 
-1; # End of Catalyst::View::CSS::Minifier::XS

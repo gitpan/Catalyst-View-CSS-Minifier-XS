@@ -1,42 +1,85 @@
-Catalyst-View-CSS-Minifier-XS
+NAME
+    Catalyst::View::CSS::Minifier::XS - Minify your served CSS files
 
-This module is for catalyst framework and is for making your css minified
+VERSION
+    version 1.093030
 
-INSTALLATION
+SYNOPSIS
+     # creating MyApp::View::CSS
+     ./script/myapp_create.pl view CSS CSS::Minifier::XS
 
-To install this module, run the following commands:
+     # in your controller file, as an action
+     sub css : Local {
+        my ( $self, $c ) = @_;
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+        # load root/css/style1.css and root/css/style2.css
+        $c->stash->{css} = [qw/style1 style2/];
 
-SUPPORT AND DOCUMENTATION
+        $c->forward("View::CSS");
+     }
 
-After installing, you can find documentation for this module with the
-perldoc command.
+     # in your html template use
+     <link rel="stylesheet" type="text/css" media="screen" href="/css" />
 
-    perldoc Catalyst::View::CSS::Minifier::XS
+DESCRIPTION
+    Use your minified css files as a separated catalyst request. By default
+    they are read from "$c->stash->{css}" as array or string.
 
-You can also look for information at:
+CONFIG VARIABLES
+    stash_variable
+      sets a different stash variable from the default "$c->stash->{css}"
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Catalyst-View-CSS-Minifier-XS
+    path
+      sets a different path for your css files
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Catalyst-View-CSS-Minifier-XS
+      default : css
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/Catalyst-View-CSS-Minifier-XS
+    subinclude
+      setting this to true will take your css files (stash variable) from
+      your referer action
 
-    Search CPAN
-        http://search.cpan.org/dist/Catalyst-View-CSS-Minifier-XS/
+       # in your controller
+       sub action : Local {
+          my ( $self, $c ) = @_;
 
+          # load exclusive.css only when /action is loaded
+          $c->stash->{css} = "exclusive";
+       }
 
-COPYRIGHT AND LICENCE
+      This could be very dangerous since it's using
+      "$c->forward($c->request->headers->referer)". It doesn't work with the
+      index action!
 
-Copyright (C) 2008 Ivan Drinchev
+      default : false
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+SEE ALSO
+    Catalyst , Catalyst::View, CSS::Minifier::XS
+
+AUTHOR
+    Ivan Drinchev "<drinchev at gmail.com>"
+
+BUGS
+    Please report any bugs or feature requests to
+    "bug-catalyst-view-css-minifier-xs at rt.cpan.org", or through the web
+    interface at
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Catalyst-View-CSS-Minifi
+    er-XS>. I will be notified, and then you'll automatically be notified of
+    progress on your bug as I make changes.
+
+COPYRIGHT & LICENSE
+    Copyright 2009 Ivan Drinchev, all rights reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+AUTHORS
+      Ivan Drinchev <drinchev (at) gmail (dot) com>
+      Arthur Axel "fREW" Schmidt <frioux@gmail.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2009 by Ivan Drinchev <drinchev (at)
+    gmail (dot) com>.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
 
