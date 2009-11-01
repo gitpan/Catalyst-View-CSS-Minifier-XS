@@ -9,7 +9,7 @@ WriteMakefile(
   NAME      => 'Catalyst::View::CSS::Minifier::XS',
   AUTHOR    => "Ivan\ Drinchev\ \<drinchev\ \(at\)\ gmail\ \(dot\)\ com\>\,\ Arthur\ Axel\ \"fREW\"\ Schmidt\ \<frioux\@gmail\.com\>",
   ABSTRACT  => "Minify\ your\ served\ CSS\ files",
-  VERSION   => '1.093030',
+  VERSION   => '1.093050',
   EXE_FILES => [ qw() ],
   (eval { ExtUtils::MakeMaker->VERSION(6.31) } ? (LICENSE => 'perl') : ()),
   PREREQ_PM    => {

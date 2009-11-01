@@ -1,5 +1,5 @@
 package Catalyst::View::CSS::Minifier::XS;
-our $VERSION = '1.093030';
+our $VERSION = '1.093050';
 
 
 
@@ -116,7 +116,6 @@ sub _expand_stash {
 
 
 
-
 1;
 
 __END__
@@ -128,7 +127,7 @@ Catalyst::View::CSS::Minifier::XS - Minify your served CSS files
 
 =head1 VERSION
 
-version 1.093030
+version 1.093050
 
 =head1 SYNOPSIS
 
@@ -191,23 +190,6 @@ default : false
 =head1 SEE ALSO
 
 L<Catalyst> , L<Catalyst::View>, L<CSS::Minifier::XS>
-
-=head1 AUTHOR
-
-Ivan Drinchev C<< <drinchev at gmail.com> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to C<bug-catalyst-view-css-minifier-xs at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Catalyst-View-CSS-Minifier-XS>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2009 Ivan Drinchev, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
 
 =head1 AUTHORS
 

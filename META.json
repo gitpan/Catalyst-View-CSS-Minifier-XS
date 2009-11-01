@@ -7,7 +7,7 @@
       "version" : 1.4,
       "url" : "http://module-build.sourceforge.net/META-spec-v1.4.html"
    },
-   "version" : "1.093030",
+   "version" : "1.093050",
    "name" : "Catalyst-View-CSS-Minifier-XS",
    "author" : [
       "Ivan Drinchev <drinchev (at) gmail (dot) com>",
