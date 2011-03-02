@@ -1,7 +1,4 @@
 package TestApp2;
-our $VERSION = '1.093050';
-
-
 
 use strict;
 use warnings;
@@ -13,6 +10,7 @@ use Catalyst;
 
 __PACKAGE__->config(
    name => 'TestApp2',
+   root => 'different_root',
    'View::CSS' => {
       stash_variable => 'frew',
    }

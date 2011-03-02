@@ -1,7 +1,4 @@
 package TestApp::View::CSS;
-our $VERSION = '1.093050';
-
-
 
 use strict;
 use warnings;

@@ -1,7 +1,4 @@
 package TestApp::Controller::Root;
-our $VERSION = '1.093050';
-
-
 
 use strict;
 use warnings;

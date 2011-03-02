@@ -1,35 +1,52 @@
 {
-   "resources" : {
-      "repository" : "http://github.com/frioux/Catalyst-View-CSS-Minifier-XS"
-   },
-   "generated_by" : "Dist::Zilla version 1.093010",
-   "meta-spec" : {
-      "version" : 1.4,
-      "url" : "http://module-build.sourceforge.net/META-spec-v1.4.html"
-   },
-   "version" : "1.093050",
-   "name" : "Catalyst-View-CSS-Minifier-XS",
+   "abstract" : "Minify your served CSS files",
    "author" : [
       "Ivan Drinchev <drinchev (at) gmail (dot) com>",
       "Arthur Axel \"fREW\" Schmidt <frioux@gmail.com>"
    ],
-   "license" : "perl",
-   "build_requires" : {
-      "parent" : "0",
-      "FindBin" : "0",
-      "File::Spec" : "0",
-      "Test::More" : "0.88",
-      "HTTP::Headers" : "0",
-      "HTTP::Request" : "0",
-      "Catalyst::Test" : "0"
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 4.200004, CPAN::Meta::Converter version 2.110580",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
    },
-   "requires" : {
-      "URI" : "0",
-      "CSS::Minifier::XS" : "0",
-      "Catalyst" : "5.64",
-      "Path::Class::File" : "0.17",
-      "Moose" : "0"
+   "name" : "Catalyst-View-CSS-Minifier-XS",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.31"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "CSS::Minifier::XS" : 0,
+            "Catalyst" : "5.64",
+            "Catalyst::Test" : 0,
+            "File::Spec" : 0,
+            "FindBin" : 0,
+            "HTTP::Headers" : 0,
+            "HTTP::Request" : 0,
+            "Moose" : 0,
+            "MooseX::Aliases" : 0,
+            "Path::Class::Dir" : "0.17",
+            "Test::More" : "0.88",
+            "URI" : 0,
+            "autodie" : 0,
+            "parent" : 0
+         }
+      }
    },
-   "abstract" : "Minify your served CSS files"
+   "release_status" : "stable",
+   "resources" : {
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/frioux/Catalyst-View-CSS-Minifier-XS.git",
+         "web" : "http://github.com/frioux/Catalyst-View-CSS-Minifier-XS"
+      }
+   },
+   "version" : "2.000000"
 }
 
