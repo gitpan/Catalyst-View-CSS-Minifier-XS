@@ -1,6 +1,6 @@
 package Catalyst::View::CSS::Minifier::XS;
-BEGIN {
-  $Catalyst::View::CSS::Minifier::XS::VERSION = '2.000000';
+{
+  $Catalyst::View::CSS::Minifier::XS::VERSION = '2.000001';
 }
 
 # ABSTRACT: Minify your served CSS files
@@ -144,6 +144,7 @@ sub _expand_stash {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -152,7 +153,7 @@ Catalyst::View::CSS::Minifier::XS - Minify your served CSS files
 
 =head1 VERSION
 
-version 2.000000
+version 2.000001
 
 =head1 SYNOPSIS
 
@@ -233,10 +234,9 @@ Arthur Axel "fREW" Schmidt <frioux@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Ivan Drinchev <drinchev (at) gmail (dot) com>.
+This software is copyright (c) 2012 by Ivan Drinchev <drinchev (at) gmail (dot) com>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

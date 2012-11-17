@@ -2,7 +2,7 @@ NAME
     Catalyst::View::CSS::Minifier::XS - Minify your served CSS files
 
 VERSION
-    version 2.000000
+    version 2.000001
 
 SYNOPSIS
      # creating MyApp::View::CSS
@@ -62,7 +62,7 @@ AUTHORS
     *   Arthur Axel "fREW" Schmidt <frioux@gmail.com>
 
 COPYRIGHT AND LICENSE
-    This software is copyright (c) 2011 by Ivan Drinchev <drinchev (at)
+    This software is copyright (c) 2012 by Ivan Drinchev <drinchev (at)
     gmail (dot) com>.
 
     This is free software; you can redistribute it and/or modify it under
