@@ -7,7 +7,7 @@ build_requires: {}
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.300028, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.130880'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -29,5 +29,6 @@ requires:
   autodie: 0
   parent: 0
 resources:
+  bugtracker: https://github.com/frioux/Catalyst-View-CSS-Minifier-XS/issues
   repository: git://github.com/frioux/Catalyst-View-CSS-Minifier-XS
-version: 2.000001
+version: 2.000002

@@ -1,6 +1,6 @@
 package Catalyst::View::CSS::Minifier::XS;
 {
-  $Catalyst::View::CSS::Minifier::XS::VERSION = '2.000001';
+  $Catalyst::View::CSS::Minifier::XS::VERSION = '2.000002';
 }
 
 # ABSTRACT: Minify your served CSS files
@@ -69,7 +69,7 @@ sub process {
    $dir = $self->INCLUDE_PATH->subdir($dir) if $self->INCLUDE_PATH;
 
    @files = map {
-      $_ =~ s/\.css//;  $dir->file( "$_.css" )
+      $_ =~ s/\.css$//;  $dir->file( "$_.css" )
    } grep { defined $_ && $_ ne '' } @files;
 
    my $output = $self->_combine_files($c, \@files);
@@ -153,7 +153,7 @@ Catalyst::View::CSS::Minifier::XS - Minify your served CSS files
 
 =head1 VERSION
 
-version 2.000001
+version 2.000002
 
 =head1 SYNOPSIS
 
@@ -234,7 +234,7 @@ Arthur Axel "fREW" Schmidt <frioux@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Ivan Drinchev <drinchev (at) gmail (dot) com>.
+This software is copyright (c) 2013 by Ivan Drinchev <drinchev (at) gmail (dot) com>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
